@@ -5,11 +5,9 @@ import { StatsCard } from './components/StatsCard';
 import { CurrentTasks } from './components/CurrentTasks';
 import { ActivityFeed } from './components/ActivityFeed';
 import { MessageInput } from './components/MessageInput';
-import { ProjectDialog } from './components/ProjectDialog';
 import { CircleCheck, Clock, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { PerformanceChart } from './components/PerformanceChart';
-import { TaskDialog } from './components/TaskDialog';
 import { Toaster } from './components/ui-components/Toaster';
 import { UserProfile } from './components/UserProfile';
 import {
@@ -19,13 +17,12 @@ import {
   activities,
   performanceData,
 } from './data/mockData';
-import { Sidebar } from './components/Sidebar';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [projectDialogOpen, setProjectDialogOpen] = useState(false);
-
+  const [open, setOpen] = useState(false);
   // Handler functions ready for backend integration
   const handleTaskClick = (taskId: string) => {
     console.log('Task clicked:', taskId);
@@ -41,12 +38,23 @@ export default function App() {
     toast.success('Message sent - ready for backend integration');
   };
 
-  const handleCreateTask = (taskData: []) => {
-    console.log('Creating task:', taskData);
-    // TODO: Call your Neon + Prisma backend API
-    // Example: await fetch('/api/tasks', { method: 'POST', body: JSON.stringify(taskData) })
-    toast.success('Task created - ready for backend integration');
-  };
+ const handleCreateTask = async (taskData: {
+  name: string;
+  status: 'IN_PROGRESS' | 'COMPLETED' | 'PENDING';
+  timeSpent: number;
+  progress: number;
+  projectId: string;
+  userId: string;
+}) => {
+  const res = await fetch('/api/tasks', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(taskData),
+  });
+  const task = await res.json();
+  console.log(task);
+};
+
 
   const handleCreateProject = (projectData: []) => {
     console.log('Creating project:', projectData);
@@ -66,19 +74,13 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <Sidebar activeTab={activeTab} onTabChange={handleTabChange} />
-
-      {/* Main Content */}
+    <div className="flex bg-gray-50">
       <main className="flex-1 overflow-auto">
         <div className="max-w-[1400px] mx-auto p-8">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
-            {/* Left Column - Main Dashboard */}
             <div>
               {/* Header */}
               <DashboardHeader userName="Margaret" date="18 May, 2023" />
-
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                 <StatsCard
