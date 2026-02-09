@@ -5,6 +5,25 @@
 // Task Related Types
 // ---------------------------
 export type TaskStatus = 'IN_PROGRESS' | 'COMPLETED' | 'PENDING'; // Match Prisma enum
+export interface RegisterRequest {
+  fullName: string;
+  email: string;
+  password: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface UserResponse {
+  id: string;
+  Name: string;
+  email: string;
+  token: string;          // JWT or session token
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export interface Task {
   id: string;

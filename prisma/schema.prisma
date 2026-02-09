@@ -6,25 +6,37 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
-
-
-model User {
-  id         String   @id @default(uuid())
-  name       String
-  email      String   @unique
-  password   String
-  avatar     String?
-  role       String   @default("user")
-  tasks      Task[]   @relation("TaskAssignee")
-  comments   Comment[]
-  activities Activity[]
-  sessions   Session[]
-  accounts   Account[]
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+enum Role {
+  USER
+  ADMIN
 }
 
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String   @default("TEMP_PASSWORD")
+  avatar       String?
+  role         Role     @default(USER)
+  tasks        Task[]      @relation("TaskAssignee")
+  comments     Comment[]
+  activities   Activity[]
+  sessions     Session[]
+  accounts     Account[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  @@index([email])
+  @@index([role])
+}
+model PasswordReset {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 
+  @@index([email])
+}
 model Session {
   id        String   @id
   userId    String
@@ -108,6 +120,9 @@ model Task {
   comments     Comment[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  @@index([projectId])
+  @@index([listId])
+  @@index([assigneeId])
 }
 
 model Activity {

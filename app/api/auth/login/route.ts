@@ -31,7 +31,7 @@ export async function POST(req: Request) {
       where: { email },
     });
 
-    if (!user || !user.password) {
+    if (!user || !user.passwordHash) {
       return NextResponse.json(
         { success: false, message: "Invalid credentials" },
         { status: 401 }
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     }
 
     /* -------------------- Compare Password -------------------- */
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
       return NextResponse.json(
         { success: false, message: "Invalid credentials" },
