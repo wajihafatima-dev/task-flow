@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
 import jwt from "jsonwebtoken";
+import { prisma } from "@/lib/prisma";
+import { headers } from "next/headers";
+import { randomUUID } from "crypto";
 
 interface LoginBody {
   email: string;
@@ -9,7 +11,7 @@ interface LoginBody {
 }
 
 /**
- * @desc    User Login
+ * @desc    User Login (Session-based only)
  * @route   POST /api/auth/login
  * @access  Public
  */
@@ -47,23 +49,48 @@ export async function POST(req: Request) {
       );
     }
 
-    /* -------------------- Generate JWT -------------------- */
-    const token = jwt.sign(
+    /* -------------------- Access Token (SHORT) -------------------- */
+    const accessToken = jwt.sign(
       {
         userId: user.id,
         email: user.email,
         role: user.role,
       },
-      process.env.JWT_SECRET as string,
-      { expiresIn: "1d" }
+      process.env.JWT_SECRET!,
+      { expiresIn: "15m" }
     );
 
-    /* -------------------- Response -------------------- */
-    return NextResponse.json(
+    /* -------------------- Refresh Token (Session Token) -------------------- */
+    const refreshToken = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_REFRESH_SECRET!,
+      { expiresIn: "7d" }
+    );
+
+    /* -------------------- Client Info -------------------- */
+    const headersList = await headers();
+    const userAgent = headersList.get("user-agent");
+    const ipAddress =
+      headersList.get("x-forwarded-for")?.split(",")[0] || "unknown";
+
+    /* -------------------- Save Session -------------------- */
+    await prisma.session.create({
+      data: {
+        id: randomUUID(),
+        userId: user.id,
+        token: refreshToken, // ✅ session token
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        ipAddress,
+        userAgent,
+      },
+    });
+
+    /* -------------------- Response + Cookie -------------------- */
+    const response = NextResponse.json(
       {
         success: true,
         message: "Login successful",
-        token,
+        token: accessToken,
         user: {
           id: user.id,
           name: user.name,
@@ -73,6 +100,16 @@ export async function POST(req: Request) {
       },
       { status: 200 }
     );
+
+    response.cookies.set("session", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+      path: "/",
+    });
+
+    return response;
   } catch (error) {
     console.error("Login error:", error);
 

@@ -8,7 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { registerUser } from "@/app/apiServices";
+import { registerUser } from "@/app/utils/apiServices";
 import { baseUrl, signupApi } from "@/app/apiEndpoints";
 
 /* ---------------- Types ---------------- */

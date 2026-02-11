@@ -1,4 +1,3 @@
-// types.ts
 export interface ApiError {
   message: string;
 }
@@ -39,19 +38,24 @@ export interface ResetPasswordResponse {
   success: boolean;
   message: string;
 }
-
-// apiHelpers.ts
 import Cookies from "js-cookie";
 import { 
   LoginRequest, RegisterRequest, UserResponse, ApiError,
   ForgotPasswordPayload, ForgotPasswordResponse,
   ResetPasswordPayload, ResetPasswordResponse
 } from "./types";
+import { toast } from "sonner";
 
 // ---------------- GET API ----------------
 export const getApi = <T>(baseUrl: string, endpoint: string) => async (): Promise<T | ApiError> => {
   try {
-    const response = await fetch(`${baseUrl}${endpoint}`);
+    const token = Cookies.get("token"); // get token from cookie
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    const response = await fetch(`${baseUrl}${endpoint}`, { headers });
     const data = await response.json();
     if (!response.ok) return { message: data.message || "Failed to fetch data" };
     return data as T;
@@ -121,10 +125,25 @@ export const registerUser = async (
 };
 
 // ---------------- LOGOUT USER ----------------
-export const logoutUser = () => {
-  Cookies.remove("token", { path: "/" });
-  localStorage.removeItem("user");
-  return { message: "Logged out successfully" };
+export const logout = async () => {
+  try {
+    const res = await fetch("/api/auth/logout", { method: "POST" });
+    const data = await res.json();
+    if (data.success) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      Cookies.remove("token");       
+      Cookies.remove("refreshToken"); 
+      Cookies.remove("session");     
+      toast.success("Logged out successfully");
+      window.location.href = "/login"; 
+    } else {
+      toast.error(data.message || "Logout failed");
+    }
+  } catch (error: unknown) {
+    if (error instanceof Error) toast.error(error.message);
+    else toast.error("Unknown error occurred during logout");
+  }
 };
 
 // ---------------- FORGOT PASSWORD ----------------

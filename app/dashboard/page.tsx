@@ -130,18 +130,6 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
-      
-      {/* Dialogs */}
-      {/* <TaskDialog
-        open={taskDialogOpen}
-        onOpenChange={setTaskDialogOpen}
-        onSubmit={handleCreateTask}
-      />
-      <ProjectDialog
-        open={projectDialogOpen}
-        onOpenChange={setProjectDialogOpen}
-        onSubmit={handleCreateProject}
-      /> */}
       <Toaster />
     </div>
   );

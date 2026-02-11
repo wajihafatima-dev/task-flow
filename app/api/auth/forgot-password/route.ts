@@ -26,14 +26,14 @@ export async function POST(req: Request) {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
       },
     });
 
     await transporter.sendMail({
-      from: `"TaskFlow" <${process.env.EMAIL_USER}>`,
-      to: email,
+      from: `"TaskFlow" <${process.env.SMTP_USER}>`,
+      to: user.email,
       subject: "Reset your password",
       html: `
         <p>You requested to reset your password.</p>

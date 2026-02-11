@@ -12,7 +12,7 @@ import {
   LogOut,
   ChevronDown,
 } from "lucide-react";
-import { logoutUser } from "../apiServices";
+import { logout } from "../utils/apiServices";
 
 interface SidebarProps {
   activeTab?: string;
@@ -38,10 +38,7 @@ export function Sidebar({ activeTab = "home", open, setOpen }: SidebarProps) {
       [menuId]: !prev[menuId],
     }));
   };
-  function handleLogout() {
-  logoutUser();
-  router.push("/login"); // redirect manually after logout
-}
+
   const navItems = [
     { id: "home", label: "Home", icon: House, path: "/" },
     {
@@ -154,9 +151,12 @@ export function Sidebar({ activeTab = "home", open, setOpen }: SidebarProps) {
           <span className="text-sm font-medium">Help & Information</span>
         </button>
 
-        <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-100 transition-colors duration-200 text-red-600">
+        <button
+          onClick={()=>logout()}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-100 transition-colors duration-200 text-red-600"
+        >
           <LogOut className="w-5 h-5 text-red-500" />
-          <span  className="text-sm font-medium">Log Out</span>
+          <span className="text-sm font-medium">Log Out</span>
         </button>
       </div>
     </aside>

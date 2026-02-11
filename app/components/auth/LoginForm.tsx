@@ -6,7 +6,7 @@ import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { loginUser } from "@/app/apiServices"; // your API fn
+import { loginUser } from "@/app/utils/apiServices"; // your API fn
 import { baseUrl, loginApi } from "@/app/apiEndpoints";
 import { toast } from "sonner";
 
@@ -42,14 +42,9 @@ const LoginSchema = Yup.object().shape({
 // ---------------------
 const LoginForm: React.FC = () => {
   const router = useRouter();
-
-  // -----------------
-  // Mutation
-  // -----------------
   const loginMutation = useMutation<LoginResponse, Error, LoginFormValues>({
     mutationFn: (values) => loginUser(baseUrl, loginApi, values),
     onSuccess: (res) => {
-      // Save token & user
       Cookies.set("token", res.token, { expires: 7 });
       localStorage.setItem("user", JSON.stringify(res.user));
       toast.success("Login successful");
@@ -58,7 +53,7 @@ const LoginForm: React.FC = () => {
     onError: (err: Error) => {
       toast.error("Invalid credentials");
     },
-  });
+});
 
   return (
     <div className="flex-1 px-4 sm:px-8 py-6 md:px-16 md:py-10 flex flex-col justify-center">
@@ -121,7 +116,6 @@ const LoginForm: React.FC = () => {
                   Forgot password?
                 </a>
               </div>
-              {/* Login Button */}
               <button
                 type="submit"
                 disabled={!isFormValid || loginMutation.isLoading}
